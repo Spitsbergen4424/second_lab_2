@@ -19,7 +19,6 @@ List *inputListFixed () {
     int length; 
     cin >> length;
     srand(time(0));
-    int randNum;
 
     auto start = steady_clock::now();
 
@@ -275,56 +274,175 @@ void deleteList (List *&beg) {
         beg = next;
     }
 }
+// -------------------
+// DYNAMIC ARRAY
+// -------------------
 
-
-int main() {
-    //List *list = createList();
-
-
-//------------------------------------------------
-    int length = 100;
+int *inputArrayFixed (int &length) {
+    cout << "Введите длину массива\n";
+    int length; 
+    cin >> length;
     srand(time(0));
 
-    List *curr = nullptr, *next = nullptr;
+    auto start = steady_clock::now();
+
+    int *curr = new int[length];
     for (int i=0; i<length; i++) {
-        curr = new List;
-        curr->data = rand() % 100;
-        curr->tail = next;
-
-        if (next) {
-            next->head = curr;
-        }
-        next = curr;
+        curr[i] = rand() % 100;
     }
-    if (curr)
-        curr->head = nullptr;
 
-    List *point = curr;
-    while (point) {
-        cout << point->data << ' ';
-        point = point->tail;
-    }
-    cout << "\n\n";
-    cout << lengthList(curr) << "\n";
+    auto end = steady_clock::now();
+    auto duration = duration_cast<microseconds>(end - start);
+    cout <<"Время создания массива: " << duration.count() << "\n";
     
-    swapItem(curr, 0, 1);
+    return curr;
+}
 
-    point = curr;
-    while (point) {
-        cout << point->data << ' ';
-        point = point->tail;
+int *inputArrayFree (int &length) {
+    string line;
+    cin.ignore();
+    getline(cin, line);
+    stringstream s(line);
+
+    auto start = steady_clock::now();
+
+    int in, length = 0;
+    int *curr = new int[length];
+    while (s >> in) {
+        int *buf = new int[length+1];
+        for (int i=0; i< length; i++) {
+            buf[i] = curr[i];
+        }
+        delete[] curr;
+        curr = buf;
+        curr[length] = in;
+        length++;
     }
-    cout << "\n\n";
-    cout << lengthList(curr) << "\n";
-//------------------------------------------------
+    auto end = steady_clock::now();
+    auto duration = duration_cast<microseconds>(end - start);
+    cout <<"Время создания массива: " << duration.count() << "\n";
+    
+    return curr;
+}
 
+int *createArray (int &length) {
+    cout << "Как хотите задать массив?\n 1) По количесву элементов\n 2) В свободном формате\n";
+    int choise;
+    cin >> choise;
+    
+    int *curr = nullptr;
+    if (cin.fail())
+        return curr;
+    switch (choise) {
+        case 1: 
+            curr = inputArrayFixed(length);
+            break; 
+        case 2:
+            curr = inputArrayFree(length);
+            break;
+        default:
+            break;
+    }
+    return curr;
+}
 
-    /*
+int arrayItemValue(int *beg, int length, int value, bool err = true) {
+    auto start = steady_clock::now();
+    int index = 0;
+	while (index != length && *(beg+index) != value)
+		index++;
+	if (err && index == length)
+		cout << "Элемент списка отсутствует \n";
+
+    auto end = steady_clock::now();
+    auto duration = duration_cast<microseconds>(end - start);
+    if (err)
+        cout <<"Время поиска элемента: " << duration.count() << "\n";
+	return index;
+}
+
+void deleteItemArray(int *&beg, int &length, int index) {
+    auto start = steady_clock::now();
+
+    if(index >= length || index < 0) {
+        cout << "Неверный индекс\n";
+        return;
+    }
+
+    if (length == 0) {
+        cout << "Массив пустой\n";
+        return;
+    }
+
+    int *buf = new int[--length];
+    int delIndex = 0;
+    for (int i=0; i<index; i++) {
+        buf[i] = *(beg + i);
+    }
+    for (int i=index; i<length; i++) {
+        buf[i] = *(beg + i +1);
+    }
+    delete[] beg;
+    beg = buf;
+
+    auto end = steady_clock::now();
+    auto duration = duration_cast<microseconds>(end - start);
+    cout <<"Время удаления элемента: " << duration.count() << "\n";
+}
+
+void insertItemArray(int *&arr, int &length, int index, int value) {
+    auto start = steady_clock::now();
+
+    if (index > length || index < 0) {
+        cout << "Неверный индекс\n";
+        return;
+    }
+
+    int *newArr = new int[length + 1];
+    
+    for (int i = 0; i < index; i++)
+        newArr[i] = arr[i];
+
+    newArr[index] = value;
+
+    for (int i = index; i < length; i++)
+        newArr[i + 1] = arr[i];
+    
+    delete[] arr;
+    arr = newArr;
+    length++;
+
+    auto end = steady_clock::now();
+    auto duration = duration_cast<microseconds>(end - start);
+    cout << "Время вставки элемента: " << duration.count() << " мкс\n";
+}
+
+void swapItemArray(int *arr, int length, int first, int second) {
+    auto start = steady_clock::now();
+
+    if (first >= length || second >= length || first < 0 || second < 0) {
+        cout << "Неверный индекс\n";
+        return;
+    }
+
+    int buf = arr[first];
+    arr[first] = arr[second];
+    arr[second] = buf;
+
+    auto end = steady_clock::now();
+    auto duration = duration_cast<microseconds>(end - start);
+    cout << "Время перестановки элементов: " << duration.count() << " мкс\n";
+}
+
+int main() {
+    List *list = createList();
+
     bool continueFlag = true;
     int choise1;
     while (continueFlag) {
         cout << "Что хотите сделать?\n 0) выйти\n 1) перезаписать список\n";
         cout << " 2) вставить элемент\n 3) удалить элемент\n 4) поменять элементы местами\n 5) найти элемент\n";
+        cout << " 6) динамический массив\n";
         cin >> choise1;
         switch (choise1) {
         case 0: {
@@ -338,9 +456,9 @@ int main() {
         }
         case 2: {
             int index, value; 
-            cout << "Какой элемент хотите вставить?";
+            cout << "Какой элемент хотите вставить?\n";
             cin >> value;
-            cout << "На какую позицию?";
+            cout << "На какую позицию?\n";
             cin >> index;
             insertItem(list, index, value);
             break;
@@ -351,7 +469,7 @@ int main() {
                 break;
             }
             int index;
-            cout << "Какой элемент хотите удалить?";
+            cout << "Какой элемент хотите удалить?\n";
             cin >> index;
             deleteItem(list, index);
             break;
@@ -396,10 +514,126 @@ int main() {
                 cout << "Ваш элемент: " << element->data << '\n'; 
             break;
         }
+        case 6: {
+            cout << "\nРАБОТА С МАССИВОМ\n";
+            
+            int arrLength = 0;
+            int *arr = createArray(arrLength);
+            
+            if (!arr) {
+                cout << "Ошибка создания массива\n";
+                break;
+            }
+            
+            bool arrMenu = true;
+            while (arrMenu) {
+                cout << "\nЧто хотите сделать?\n";
+                cout << " 0) Вернуться в главное меню\n";
+                cout << " 1) Вставить элемент\n";
+                cout << " 2) Удалить элемент по индексу\n";
+                cout << " 3) Удалить элемент по значению\n";
+                cout << " 4) Поменять элементы местами\n";
+                cout << " 5) Найти элемент по индексу\n";
+                cout << " 6) Вывести массив\n";
+                
+                int choice;
+                cin >> choice;
+                
+                switch (choice) {
+                    case 0:
+                        arrMenu = false;
+                        break;
+                        
+                    case 1: {
+                        int index, value;
+                        cout << "Значение: ";
+                        cin >> value;
+                        cout << "Индекс: ";
+                        cin >> index;
+                        insertItemArray(arr, arrLength, index, value);
+                        break;
+                    }
+                    
+                    case 2: {
+                        if (arrLength == 0) {
+                            cout << "Массив пуст\n";
+                            break;
+                        }
+                        int index;
+                        cout << "Индекс для удаления: ";
+                        cin >> index;
+                        deleteItem(arr, arrLength, index);
+                        arrLength--; 
+                        break;
+                    }
+                    
+                    case 3: {
+                        if (arrLength == 0) {
+                            cout << "Массив пуст\n";
+                            break;
+                        }
+                        int value;
+                        cout << "Значение для удаления: ";
+                        cin >> value;
+                        deleteItemArrayByValue(arr, arrLength, value);
+                        if (arrLength > 0) arrLength--;
+                        break;
+                    }
+                    
+                    case 4: {
+                        if (arrLength < 2) {
+                            cout << "Недостаточно элементов\n";
+                            break;
+                        }
+                        int first, second;
+                        cout << "Индексы элементов: ";
+                        cin >> first >> second;
+                        swapItemArray(arr, arrLength, first, second);
+                        break;
+                    }
+                    
+                    case 5: {
+                        if (arrLength == 0) {
+                            cout << "Массив пуст\n";
+                            break;
+                        }
+                        auto start = steady_clock::now();
+                        
+                        int index;
+                        cout << "Индекс: ";
+                        cin >> index;
+                        
+                        if (index >= arrLength || index < 0) {
+                            cout << "Элемент отсутствует\n";
+                        } else {
+                            cout << "Элемент: " << arr[index] << "\n";
+                        }
+                        
+                        auto end = steady_clock::now();
+                        auto duration = duration_cast<microseconds>(end - start);
+                        cout << "Время поиска элемента: " << duration.count() << " мкс\n";
+                        break;
+                    }
+                    
+                    case 6: {
+                        cout << "Массив: ";
+                        for (int i = 0; i < arrLength; i++)
+                            cout << arr[i] << " ";
+                        cout << "\n";
+                        break;
+                    }
+                    
+                    default:
+                        cout << "Неверный выбор\n";
+                }
+            }
+            
+            delete[] arr;
+            break;
+        }
         default:
             break;
         }
     }
-    */
-    deleteList(curr);
+    deleteList(list);
 }
